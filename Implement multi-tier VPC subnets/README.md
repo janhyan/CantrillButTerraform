@@ -21,3 +21,4 @@ sn-web-C 10.16.176.0/20 AZC IPv6 0B
 
 Remember to enable auto assign ipv6 on every subnet you create.
 
+![alt text](https://github.com/janhyan/CantrillButTerraform/blob/main/Implement%20multi-tier%20VPC%20subnets/architecture.png)
