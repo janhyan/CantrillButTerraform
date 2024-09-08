@@ -14,6 +14,8 @@ data "aws_subnet" "this" {
   id       = each.value
 }
 
+
+# CREATE VPC RESOURCES
 resource "aws_internet_gateway" "this" {
   vpc_id = data.aws_vpc.a4l_vpc.id
 
@@ -92,30 +94,16 @@ resource "aws_security_group" "a4l-sg" {
   }
 }
 
-resource "tls_private_key" "tf_ec2_key" {
-  algorithm = "RSA"
-  rsa_bits = 4096
-}
-
-resource "local_file" "tf_ec2_key" {
-  content = tls_private_key.tf_ec2_key.private_key_pem
-  filename = "${path.module}/tf_ec2_key.pem"
-}
-
-resource "aws_key_pair" "tf_ec2_key" {
-  key_name = "tf_ec2_key"
-  public_key = tls_private_key.tf_ec2_key.public_key_openssh
-}
-
-resource "aws_instance" "a4l-bastion" {
-  ami = var.ec2_ami
-  instance_type = "t2.micro"
-  key_name = aws_key_pair.tf_ec2_key.key_name
-  vpc_security_group_ids = [aws_security_group.a4l-sg.id]
-  associate_public_ip_address = true
-  subnet_id = data.aws_subnet.this["sn-web-A"].id
+############# NAT GATEWAY ##############
+resource "aws_nat_gateway" "a4l-vpc1-natgw" {
+  for_each = toset(data.aws_subnets.this.ids)
+  subnet_id = each.value
+  connectivity_type = "public"
 
   tags = {
-    Name = "A4L-Bastion"
+    Name = "a4l-vpc1-natgw-${each.key}"
   }
+
+  depends_on = [ aws_internet_gateway.this ]
 }
+
