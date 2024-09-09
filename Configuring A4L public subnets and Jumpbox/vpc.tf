@@ -107,3 +107,17 @@ resource "aws_nat_gateway" "a4l-vpc1-natgw" {
   depends_on = [ aws_internet_gateway.this ]
 }
 
+############# ROUTE TABLE FOR BACKEND ##############
+resource "aws_route_table" "a4l-private-rt" {
+  for_each = var.private_route_tables
+  vpc_id = data.aws_vpc.a4l_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.a4l-vpc1-natgw[each.key].id
+  }
+
+  tags = {
+    Name = each.key
+  }
+}
